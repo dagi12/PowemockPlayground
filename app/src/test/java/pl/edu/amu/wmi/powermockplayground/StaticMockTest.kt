@@ -5,9 +5,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
+import org.powermock.core.classloader.annotations.PowerMockIgnore
 import org.powermock.core.classloader.annotations.PrepareForTest
-import org.powermock.modules.junit4.PowerMockRunner
-import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.powermock.modules.junit4.rule.PowerMockRule
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
@@ -16,14 +15,14 @@ import org.robolectric.annotation.Config
 /**
  * @author Eryk Mariankowski <eryk.mariankowski></eryk.mariankowski>@247.codes> on 20.05.18.
  */
-@RunWith(PowerMockRunner::class)
-@PowerMockRunnerDelegate(RobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 @Config(
     constants = BuildConfig::class,
     sdk = [26]
 )
+@PowerMockIgnore("org.mockito.*", "org.robolectric.*", "android.*", "javax.xml.parsers.*", "com.sun.org.apache.xerces.internal.jaxp.*")
 @PrepareForTest(TestStatic::class)
-class MainActivityTest {
+class StaticMockTest {
 
     @JvmField
     @Rule
@@ -33,8 +32,8 @@ class MainActivityTest {
     fun shouldCreateActivity() {
         PowerMockito.mockStatic(TestStatic::class.java)
         PowerMockito.`when`(TestStatic.testMsg()).thenReturn("hello mock")
-
-        Assert.assertTrue(TestStatic.testMsg() == "hello mock")
+        val handler = Thread.UncaughtExceptionHandler { _, _ -> }
+        PowerMockito.`when`(Thread.getDefaultUncaughtExceptionHandler()).thenReturn(handler)
 
         val activity = Robolectric
             .buildActivity(MainActivity::class.java)
